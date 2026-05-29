@@ -25,7 +25,7 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    // Simulate login — replace with Supabase auth later
+    // Simulate login — will replace with Supabase auth later
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     setLoading(false);
