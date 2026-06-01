@@ -31,7 +31,7 @@ export default function SignupPage() {
 
     setLoading(true);
 
-    // Simulate signup — replace with Supabase auth later
+    // Simulate signup — will replace with Supabase auth
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     setLoading(false);
