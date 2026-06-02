@@ -9,8 +9,9 @@ export const SITE = {
 
 // AI Platforms
 export const PLATFORMS = {
-  doubao: { name: "豆包", priority: 0, color: "#00D9C5" },
+  minimax: { name: "MiniMax", priority: 0, color: "#5C7CFA" },
   deepseek: { name: "DeepSeek", priority: 0, color: "#4F46E5" },
+  doubao: { name: "豆包", priority: 0, color: "#00D9C5" },
   kimi: { name: "Kimi", priority: 0, color: "#6366F1" },
   wenxin: { name: "文心一言", priority: 0, color: "#EC4899" },
   tongyi: { name: "通义千问", priority: 1, color: "#F97316" },

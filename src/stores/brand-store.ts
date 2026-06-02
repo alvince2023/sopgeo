@@ -56,8 +56,9 @@ const mockBrands: Brand[] = [
       { id: "kw-3", brandId: "brand-001", word: "蔚来换电", category: "brand", priority: 9 },
     ],
     platforms: [
-      { platform: "doubao", enabled: true },
+      { platform: "minimax", enabled: true },
       { platform: "deepseek", enabled: true },
+      { platform: "doubao", enabled: true },
       { platform: "kimi", enabled: true },
       { platform: "wenxin", enabled: true },
     ],
@@ -77,8 +78,9 @@ const mockBrands: Brand[] = [
       { id: "kw-5", brandId: "brand-002", word: "无糖饮料哪个好", category: "comparison", priority: 8 },
     ],
     platforms: [
+      { platform: "minimax", enabled: true },
       { platform: "doubao", enabled: true },
-      { platform: "kimi", enabled: true },
+      { platform: "deepseek", enabled: true },
     ],
     createdAt: "2026-05-22T09:00:00Z",
     updatedAt: "2026-05-23T14:00:00Z",
