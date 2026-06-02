@@ -228,7 +228,7 @@ function QueryResultRow({
   brandName: string;
   index: number;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const platform = PLATFORMS[result.platform as PlatformKey];
 
   return (
@@ -392,7 +392,7 @@ interface MonitorAPIResponse {
 export default function MonitorPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [hasData, setHasData] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "queries">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "queries">("queries");
   const [platformResults, setPlatformResults] = useState<Record<string, MonitorResult[]>>({});
   const [realPlatforms, setRealPlatforms] = useState<string[]>([]);
   const [runningPlatforms, setRunningPlatforms] = useState<string[]>([]);
