@@ -55,7 +55,13 @@ export class MinimaxAdapter extends BasePlatformAdapter {
     let response: string;
 
     if (await this.isAvailable()) {
-      response = await this.callMinimax(queryText);
+      try {
+        response = await this.callMinimax(queryText);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error("[MinimaxAdapter] API call failed, falling back to mock:", msg);
+        response = this.generateMockResponse(q.brandName, q.keyword, 0.65);
+      }
     } else {
       // Fallback to mock if no API key
       console.warn("[MinimaxAdapter] No API key, using mock response");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -22,6 +22,7 @@ import {
   Lightbulb,
   FileText,
   ArrowRight,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -147,9 +148,13 @@ function ResultCard({ result, brand, index }: { result: SearchResult; brand: str
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className="text-sm font-semibold text-foreground">{result.platformName}</span>
-            {result.isReal && (
+            {result.isReal ? (
               <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
                 真实API
+              </span>
+            ) : (
+              <span className="px-1.5 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
+                模拟数据
               </span>
             )}
             {result.mentioned ? (
@@ -349,7 +354,35 @@ export default function SearchLabPage() {
   const [activeTab, setActiveTab] = useState<"results" | "strategy">("results");
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingAdvice, setIsGeneratingAdvice] = useState(false);
+  const [apiStatus, setApiStatus] = useState<Record<string, boolean>>({});
+  const [apiChecking, setApiChecking] = useState(true);
   const abortRef = useRef<AbortController | null>(null);
+
+  // ── Check API status on mount ────────────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/monitor")
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        const status: Record<string, boolean> = {};
+        (data.platforms || []).forEach(
+          (p: { platform: string; available: boolean }) => {
+            status[p.platform] = p.available;
+          }
+        );
+        setApiStatus(status);
+        setApiChecking(false);
+      })
+      .catch(() => {
+        if (!cancelled) setApiChecking(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const isMinimaxAvailable = apiStatus.minimax ?? false;
 
   // ── Search via MiniMax real API ──────────────────────────────────────────────
   const handleSearch = useCallback(async () => {
@@ -411,7 +444,7 @@ export default function SearchLabPage() {
               snippets: r.snippets,
               competitors: r.competitors,
               queryTime: r.queryTime,
-              isReal: true,
+              isReal: apiStatus[pr.platform] ?? false,
             };
           }
         );
@@ -451,7 +484,7 @@ export default function SearchLabPage() {
     } finally {
       setIsSearching(false);
     }
-  }, [brandName, keyword]);
+  }, [brandName, keyword, apiStatus]);
 
   const hasResults = results.length > 0;
   const mentionedCount = results.filter((r) => r.mentioned).length;
@@ -465,14 +498,38 @@ export default function SearchLabPage() {
             <Zap className="w-5 h-5 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground tracking-tight">AI 搜索实验室</h1>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            MiniMax 真实 API
-          </span>
+          {!apiChecking && (
+            isMinimaxAvailable ? (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                MiniMax 真实 API
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                模拟数据模式
+              </span>
+            )
+          )}
         </div>
         <p className="text-sm text-muted-foreground mt-1 ml-12">
           输入品牌名 + 关键词，直接向 MiniMax 发起真实查询，查看你的品牌是否被 AI 提及，并获取内容优化策略
         </p>
       </div>
+
+      {/* ── API Key 警告 ── */}
+      {!apiChecking && !isMinimaxAvailable && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-5 py-4">
+          <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-amber-300 mb-1">
+              MiniMax API Key 无效或未配置
+            </p>
+            <p className="text-xs text-amber-400/70 leading-relaxed">
+              当前使用<strong>模拟数据</strong>展示，搜索结果为随机生成。
+              获取有效 API Key 后，在 Vercel 环境变量中配置 <code className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 text-[11px]">MINIMAX_API_KEY</code> 和 <code className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 text-[11px]">MINIMAX_GROUP_ID</code> 即可激活真实 AI 查询。
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Search Box ── */}
       <div className="rounded-xl border border-white/[0.08] bg-card p-6">

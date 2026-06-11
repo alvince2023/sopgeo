@@ -77,7 +77,13 @@ export class DeepSeekAdapter extends BasePlatformAdapter {
     });
 
     if (!res.ok) {
-      throw new Error(`DeepSeek API error: ${res.status}`);
+      const errBody = await res.text();
+      let errMsg = `DeepSeek API error: ${res.status}`;
+      try {
+        const errJson = JSON.parse(errBody);
+        if (errJson?.error?.message) errMsg = errJson.error.message;
+      } catch {}
+      throw new Error(errMsg);
     }
 
     const data = await res.json();
