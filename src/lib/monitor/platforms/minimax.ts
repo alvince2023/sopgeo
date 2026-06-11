@@ -48,6 +48,7 @@ export class MinimaxAdapter extends BasePlatformAdapter {
 
   async query(q: MonitorQuery): Promise<MonitorResult> {
     const start = Date.now();
+    let isRealApi = false;
 
     // Build the search query — simulate real user questions in AI search
     const queryText = this.buildQueryText(q);
@@ -57,6 +58,7 @@ export class MinimaxAdapter extends BasePlatformAdapter {
     if (await this.isAvailable()) {
       try {
         response = await this.callMinimax(queryText);
+        isRealApi = true;
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error("[MinimaxAdapter] API call failed, falling back to mock:", msg);
@@ -79,6 +81,7 @@ export class MinimaxAdapter extends BasePlatformAdapter {
       competitors: this.extractCompetitors(response, q.brandName),
       queryTime: Date.now() - start,
       timestamp: new Date(),
+      isRealApi,
     };
   }
 

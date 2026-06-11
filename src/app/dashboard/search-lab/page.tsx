@@ -428,10 +428,10 @@ export default function SearchLabPage() {
               snippets: string[];
               competitors: string[];
               queryTime: number;
+              isRealApi?: boolean;
             }>;
           }) => {
-            const r = pr.results[0];
-            return {
+            return pr.results.map((r) => ({
               platform: pr.platform,
               platformName: pr.platformName,
               platformColor: "#5C7CFA",
@@ -444,8 +444,8 @@ export default function SearchLabPage() {
               snippets: r.snippets,
               competitors: r.competitors,
               queryTime: r.queryTime,
-              isReal: apiStatus[pr.platform] ?? false,
-            };
+              isReal: r.isRealApi ?? false,
+            }));
           }
         );
         setResults(mapped);
@@ -484,7 +484,7 @@ export default function SearchLabPage() {
     } finally {
       setIsSearching(false);
     }
-  }, [brandName, keyword, apiStatus]);
+  }, [brandName, keyword]);
 
   const hasResults = results.length > 0;
   const mentionedCount = results.filter((r) => r.mentioned).length;

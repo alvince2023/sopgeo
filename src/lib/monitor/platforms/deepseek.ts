@@ -27,12 +27,15 @@ export class DeepSeekAdapter extends BasePlatformAdapter {
     const queryText = `请推荐${q.keyword}方面的优秀品牌或工具，并说明各自特点。`;
 
     let response: string;
+    let isRealApi = false;
 
     if (await this.isAvailable()) {
       try {
         response = await this.callDeepSeek(queryText);
+        isRealApi = true;
       } catch (e) {
-        console.warn("[DeepSeekAdapter] API call failed, falling back to mock:", e);
+        const msg = e instanceof Error ? e.message : String(e);
+        console.warn("[DeepSeekAdapter] API call failed, falling back to mock:", msg);
         response = this.generateMockResponse(q.brandName, q.keyword, 0.55);
       }
     } else {
@@ -50,6 +53,7 @@ export class DeepSeekAdapter extends BasePlatformAdapter {
       competitors: [],
       queryTime: Date.now() - start,
       timestamp: new Date(),
+      isRealApi,
     };
   }
 

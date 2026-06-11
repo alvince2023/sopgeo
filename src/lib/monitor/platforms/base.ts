@@ -22,6 +22,7 @@ export interface MonitorResult {
   competitors: string[]; // competitor brands also mentioned
   queryTime: number; // ms
   timestamp: Date;
+  isRealApi?: boolean; // whether this result came from a real API call
 }
 
 export interface PlatformAdapter {
