@@ -14,9 +14,17 @@ import {
   CreditCard,
   ChevronLeft,
   ChevronRight,
+  Zap,
 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
 import { cn } from "@/lib/utils";
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  badge?: string;
+}
 
 interface SidebarProps {
   collapsed: boolean;
@@ -35,6 +43,7 @@ const NAV_ITEMS = [
     section: "监控分析",
     items: [
       { href: "/dashboard/monitor", label: "AI可见度", icon: Eye },
+      { href: "/dashboard/search-lab", label: "搜索实验室", icon: Zap, badge: "新" },
       { href: "/dashboard/competitors", label: "竞品分析", icon: TrendingUp },
       { href: "/dashboard/reports", label: "数据报告", icon: FileText },
     ],
@@ -108,7 +117,7 @@ export function DashboardSidebar({ collapsed, onToggle }: SidebarProps) {
               )}
             </AnimatePresence>
             <div className="space-y-1">
-              {section.items.map((item) => {
+              {section.items.map((item: NavItem) => {
                 const isActive =
                   pathname === item.href ||
                   (item.href !== "/dashboard" &&
@@ -139,8 +148,14 @@ export function DashboardSidebar({ collapsed, onToggle }: SidebarProps) {
                           initial={{ opacity: 0, x: -5 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: -5 }}
+                          className="flex items-center gap-2 flex-1"
                         >
                           {item.label}
+                          {item.badge && (
+                            <span className="ml-auto px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/20 text-primary">
+                              {item.badge}
+                            </span>
+                          )}
                         </motion.span>
                       )}
                     </AnimatePresence>
