@@ -413,7 +413,7 @@ export default function SearchLabPage() {
       const data = await res.json();
 
       if (data.success && data.data.platformResults?.length > 0) {
-        const mapped: SearchResult[] = data.data.platformResults.map(
+        const mapped: SearchResult[] = data.data.platformResults.flatMap(
           (pr: {
             platform: string;
             platformName: string;

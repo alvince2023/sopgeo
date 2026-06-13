@@ -73,7 +73,7 @@ function HighlightText({ text, brand }: { text: string; brand: string }) {
   return (
     <span>
       {parts.map((part, i) =>
-        regex.test(part) ? (
+        part.toLowerCase() === brand.toLowerCase() ? (
           <mark
             key={i}
             className="bg-primary/20 text-primary font-semibold rounded px-0.5"
