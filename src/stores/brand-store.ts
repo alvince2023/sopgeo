@@ -189,18 +189,22 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
   createBrand: async (data) => {
     const now = new Date().toISOString();
     const newId = `brand-${String(idCounter++).padStart(3, "0")}`;
+
+    // Filter out empty keywords before creating
+    const validKeywords = data.keywords.filter((w) => w.trim().length > 0);
+
     const newBrand: Brand = {
       id: newId,
       userId: "user-001",
-      name: data.name,
-      website: data.website || undefined,
+      name: data.name.trim(),
+      website: data.website?.trim() || undefined,
       industry: data.industry || undefined,
-      description: data.description || undefined,
+      description: data.description?.trim() || undefined,
       status: "active",
-      keywords: data.keywords.map((w, i) => ({
+      keywords: validKeywords.map((w, i) => ({
         id: `kw-${Date.now()}-${i}`,
         brandId: newId,
-        word: w,
+        word: w.trim(),
         category: "brand" as const,
         priority: 5,
       })),
@@ -215,9 +219,13 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
     set((s) => ({ brands: [...s.brands, newBrand] }));
 
     // Trigger monitor after brand creation (async, non-blocking)
-    setTimeout(() => {
-      get().runMonitorForBrand(newId);
-    }, 500);
+    try {
+      setTimeout(() => {
+        get().runMonitorForBrand(newId);
+      }, 500);
+    } catch (monitorErr) {
+      console.warn("[BrandStore] Monitor trigger failed:", monitorErr);
+    }
 
     return newBrand;
   },

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -80,14 +80,27 @@ export default function NewBrandPage() {
     }
   };
 
-  const onSubmit = async (data: BrandFormValues) => {
+  const onValid = async (data: BrandFormValues) => {
     setIsSubmitting(true);
     try {
       const brand = await createBrand(data);
-      // Navigate to brand detail page — monitor will auto-run there
       router.push(`/dashboard/brands/${brand.id}`);
+    } catch (err) {
+      console.error("品牌创建失败:", err);
+      alert(`品牌创建失败: ${err instanceof Error ? err.message : "未知错误"}`);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Navigate back to the step with validation errors
+  const onInvalid = (errors: FieldErrors<BrandFormValues>) => {
+    if (errors.name) {
+      setStep(0);
+    } else if (errors.keywords) {
+      setStep(1);
+    } else if (errors.platforms) {
+      setStep(2);
     }
   };
 
@@ -165,7 +178,7 @@ export default function NewBrandPage() {
         ))}
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onValid, onInvalid)}>
         <AnimatePresence mode="wait">
           {/* Step 0: Brand Info */}
           {step === 0 && (
@@ -184,7 +197,10 @@ export default function NewBrandPage() {
                   <input
                     {...register("name")}
                     placeholder="例如：蔚来汽车"
-                    className="w-full px-4 py-2.5 bg-white/[0.03] border border-white/[0.06] rounded-lg text-sm text-white placeholder:text-slate-400/50 focus:outline-none focus:ring-2 focus:ring-[#5C7CFA]/30 focus:border-[#5C7CFA]/30 transition-all"
+                    className={cn(
+                      "w-full px-4 py-2.5 bg-white/[0.03] border rounded-lg text-sm text-white placeholder:text-slate-400/50 focus:outline-none focus:ring-2 focus:ring-[#5C7CFA]/30 focus:border-[#5C7CFA]/30 transition-all",
+                      errors.name ? "border-red-500/50" : "border-white/[0.06]"
+                    )}
                   />
                   {errors.name && (
                     <p className="text-xs text-red-400 mt-1.5">
@@ -276,25 +292,37 @@ export default function NewBrandPage() {
 
                   <div className="space-y-2">
                     {keywords.map((_, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <input
-                          {...register(`keywords.${idx}`)}
-                          placeholder={`关键词 ${idx + 1}`}
-                          className="flex-1 px-4 py-2.5 bg-white/[0.03] border border-white/[0.06] rounded-lg text-sm text-white placeholder:text-slate-400/50 focus:outline-none focus:ring-2 focus:ring-[#5C7CFA]/30 focus:border-[#5C7CFA]/30 transition-all"
-                        />
-                        {keywords.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeKeyword(idx)}
-                            className="p-2.5 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-colors"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
+                      <div key={idx}>
+                        <div className="flex items-center gap-2">
+                          <input
+                            {...register(`keywords.${idx}`)}
+                            placeholder={`关键词 ${idx + 1}`}
+                            className={cn(
+                              "flex-1 px-4 py-2.5 bg-white/[0.03] border rounded-lg text-sm text-white placeholder:text-slate-400/50 focus:outline-none focus:ring-2 focus:ring-[#5C7CFA]/30 focus:border-[#5C7CFA]/30 transition-all",
+                              errors.keywords?.[idx]
+                                ? "border-red-500/50"
+                                : "border-white/[0.06]"
+                            )}
+                          />
+                          {keywords.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeKeyword(idx)}
+                              className="p-2.5 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                        {errors.keywords?.[idx] && (
+                          <p className="text-xs text-red-400 mt-1 ml-1">
+                            {errors.keywords[idx]?.message}
+                          </p>
                         )}
                       </div>
                     ))}
                   </div>
-                  {errors.keywords && (
+                  {errors.keywords && !Array.isArray(errors.keywords) && (
                     <p className="text-xs text-red-400 mt-1.5">
                       {errors.keywords.message || errors.keywords.root?.message}
                     </p>
