@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5C7CFA"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon: search lens + geo grid combo -->
+  <g transform="translate(0, 6)">
+    <!-- Outer rounded square with gradient fill -->
+    <rect x="2" y="2" width="36" height="36" rx="9" fill="url(#logoGrad)"/>
+
+    <!-- Inner search/lens icon (white) -->
+    <!-- Magnifying glass circle -->
+    <circle cx="18" cy="17" r="8" stroke="white" stroke-width="2.2" fill="none" opacity="0.95"/>
+    <!-- Handle -->
+    <line x1="24" y1="24" x2="31" y2="31" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.95"/>
+
+    <!-- Subtle geo grid dots (bottom right) -->
+    <circle cx="26" cy="28" r="1.2" fill="white" opacity="0.5"/>
+    <circle cx="30" cy="28" r="1.2" fill="white" opacity="0.5"/>
+    <circle cx="26" cy="32" r="1.2" fill="white" opacity="0.5"/>
+    <circle cx="30" cy="32" r="1.2" fill="white" opacity="0.5"/>
+  </g>
+
+  <!-- Text: SopGeo -->
+  <text x="50" y="38"
+    font-family="'Inter', 'Geist', -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
+    font-size="26"
+    font-weight="700"
+    letter-spacing="-0.5"
+    fill="#E8E8F0">
+    Sop<tspan fill="url(#logoGrad)">Geo</tspan>
+  </text>
+</svg>

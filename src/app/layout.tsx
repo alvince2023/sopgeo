@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   description:
     "首个专注中文市场的AI搜索GEO平台。实时监控豆包、DeepSeek、Kimi、文心一言等AI引擎中的品牌可见度，按效果付费。",
   keywords: ["GEO", "生成式引擎优化", "AI搜索优化", "品牌可见度", "豆包", "DeepSeek", "Kimi"],
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+  },
   openGraph: {
     title: "SopGeo — 让你的品牌在AI搜索结果中被看见",
     description:
