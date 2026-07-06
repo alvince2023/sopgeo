@@ -83,7 +83,17 @@ export default function NewBrandPage() {
   const onValid = async (data: BrandFormValues) => {
     setIsSubmitting(true);
     try {
-      const brand = await createBrand(data);
+      // Defensive: strip empty keywords before creating
+      const cleanedData = {
+        ...data,
+        keywords: data.keywords.filter((k) => k.trim()),
+      };
+      if (cleanedData.keywords.length === 0) {
+        alert("请至少填写一个有效的关键词");
+        setStep(1);
+        return;
+      }
+      const brand = await createBrand(cleanedData);
       router.push(`/dashboard/brands/${brand.id}`);
     } catch (err) {
       console.error("品牌创建失败:", err);
@@ -93,15 +103,38 @@ export default function NewBrandPage() {
     }
   };
 
-  // Navigate back to the step with validation errors
+  // Navigate back to the step with validation errors — show user feedback
   const onInvalid = (errors: FieldErrors<BrandFormValues>) => {
+    console.warn("[BrandForm] Validation errors:", errors);
+    let errorMsg = "";
     if (errors.name) {
+      errorMsg = `品牌名称: ${errors.name.message || "请填写品牌名称"}`;
       setStep(0);
     } else if (errors.keywords) {
+      // Check for individual keyword errors
+      const kwErrors = errors.keywords;
+      if (Array.isArray(kwErrors)) {
+        const firstError = kwErrors.find((e) => e !== undefined && e?.message);
+        if (firstError) {
+          errorMsg = `关键词: ${firstError.message || "请检查关键词输入"}`;
+        }
+      } else {
+        errorMsg = `关键词: ${kwErrors.message || kwErrors.root?.message || "请检查关键词输入"}`;
+      }
       setStep(1);
     } else if (errors.platforms) {
+      errorMsg = `平台选择: ${errors.platforms.message || "请至少选择1个平台"}`;
       setStep(2);
     }
+
+    if (errorMsg) {
+      alert(`表单验证未通过：\n${errorMsg}\n\n请检查并修改后重试`);
+    }
+  };
+
+  // Manual submit handler — bypasses form onSubmit event reliability issues
+  const handleCreateBrand = () => {
+    handleSubmit(onValid, onInvalid)();
   };
 
   const nextStep = () => {
@@ -114,10 +147,17 @@ export default function NewBrandPage() {
     }
     if (step === 1) {
       const kws = form.getValues("keywords");
-      if (!kws.some((k) => k.trim())) {
+      // Filter out empty keywords BEFORE proceeding to step 2
+      const validKws = kws.filter((k) => k.trim());
+      if (validKws.length === 0) {
         form.trigger("keywords");
         return;
       }
+      // Update form value to only contain valid keywords (removes empty entries)
+      setValue(
+        "keywords",
+        validKws.length > 0 ? validKws : [""]
+      );
     }
     setStep((s) => Math.min(s + 1, 2));
   };
@@ -178,7 +218,7 @@ export default function NewBrandPage() {
         ))}
       </div>
 
-      <form onSubmit={handleSubmit(onValid, onInvalid)}>
+      <form>
         <AnimatePresence mode="wait">
           {/* Step 0: Brand Info */}
           {step === 0 && (
@@ -455,7 +495,8 @@ export default function NewBrandPage() {
                   上一步
                 </button>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleCreateBrand}
                   disabled={isSubmitting}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#5C7CFA] text-white rounded-lg text-sm font-medium hover:bg-[#5C7CFA]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >

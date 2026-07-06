@@ -15,6 +15,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
+  Search,
+  Lightbulb,
 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
 import { cn } from "@/lib/utils";
@@ -44,6 +46,8 @@ const NAV_ITEMS = [
     items: [
       { href: "/dashboard/monitor", label: "AI可见度", icon: Eye },
       { href: "/dashboard/search-lab", label: "搜索实验室", icon: Zap, badge: "新" },
+      { href: "/dashboard/source-analysis", label: "搜索源解析", icon: Search },
+      { href: "/dashboard/content-optimization", label: "内容优化", icon: Lightbulb },
       { href: "/dashboard/competitors", label: "竞品分析", icon: TrendingUp },
       { href: "/dashboard/reports", label: "数据报告", icon: FileText },
     ],
