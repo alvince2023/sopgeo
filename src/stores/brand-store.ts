@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { Brand, BrandFormData, PlatformKey } from "@/types";
 import type { MonitorJobResult } from "@/lib/monitor/engine";
 import type { GeoStrategyReport } from "@/lib/monitor/geo-strategy";
@@ -42,6 +43,28 @@ interface BrandStore {
 
 // Mock data for development
 const mockBrands: Brand[] = [
+  {
+    id: "brand-019",
+    userId: "user-001",
+    name: "SopGeo",
+    website: "https://sopgeo.com",
+    industry: "企业服务",
+    description: "AI 搜索 GEO 优化平台，帮助品牌在 AI 搜索结果中被看见",
+    status: "active",
+    keywords: [
+      { id: "kw-019-1", brandId: "brand-019", word: "AI搜索优化", category: "brand", priority: 10 },
+      { id: "kw-019-2", brandId: "brand-019", word: "GEO优化", category: "knowledge", priority: 9 },
+      { id: "kw-019-3", brandId: "brand-019", word: "品牌可见度", category: "recommendation", priority: 8 },
+      { id: "kw-019-4", brandId: "brand-019", word: "AI搜索排名", category: "comparison", priority: 7 },
+    ],
+    // Only platforms with real API keys configured on Vercel
+    platforms: [
+      { platform: "minimax", enabled: true },
+      { platform: "deepseek", enabled: true },
+    ],
+    createdAt: "2026-07-20T08:00:00Z",
+    updatedAt: "2026-07-22T10:00:00Z",
+  },
   {
     id: "brand-001",
     userId: "user-001",
@@ -87,9 +110,11 @@ const mockBrands: Brand[] = [
   },
 ];
 
-let idCounter = 3;
+let idCounter = 20;
 
-export const useBrandStore = create<BrandStore>((set, get) => ({
+export const useBrandStore = create<BrandStore>()(
+  persist(
+    (set, get) => ({
   brands: mockBrands,
   selectedBrand: null,
   isLoading: false,
@@ -233,4 +258,30 @@ export const useBrandStore = create<BrandStore>((set, get) => ({
   deleteBrand: async (id) => {
     set((s) => ({ brands: s.brands.filter((b) => b.id !== id) }));
   },
-}));
+    }),
+    {
+      name: "sopgeo-brand-store",
+      version: 2,
+      // Only persist data fields, not functions
+      partialize: (state) => ({
+        brands: state.brands,
+        monitorResults: state.monitorResults,
+        monitorStatus: state.monitorStatus,
+        geoReports: state.geoReports,
+      }),
+      // Ensure seeded mock brands are always present (even if user has old persisted data)
+      merge: (persisted, current) => {
+        const p = (persisted as Partial<BrandStore>) || {};
+        const mockIds = new Set(mockBrands.map((b) => b.id));
+        const userBrands = (p.brands || []).filter(
+          (b) => !mockIds.has(b.id)
+        );
+        return {
+          ...current,
+          ...p,
+          brands: [...mockBrands, ...userBrands],
+        };
+      },
+    }
+  )
+);
