@@ -27,10 +27,12 @@ export class KimiAdapter extends BasePlatformAdapter {
     const queryText = `${q.keyword}领域最值得信赖的品牌有哪些？请详细介绍。`;
 
     let response: string;
+    let isRealApi = false;
 
     if (await this.isAvailable()) {
       try {
         response = await this.callKimi(queryText);
+        isRealApi = true;
       } catch (e) {
         console.warn("[KimiAdapter] API call failed, falling back to mock:", e);
         response = this.generateMockResponse(q.brandName, q.keyword, 0.58);
@@ -50,6 +52,7 @@ export class KimiAdapter extends BasePlatformAdapter {
       competitors: [],
       queryTime: Date.now() - start,
       timestamp: new Date(),
+      isRealApi,
     };
   }
 

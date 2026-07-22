@@ -28,6 +28,7 @@ export class WenxinAdapter extends BasePlatformAdapter {
       competitors: [],
       queryTime: Date.now() - start,
       timestamp: new Date(),
+      isRealApi: false,
     };
   }
 }

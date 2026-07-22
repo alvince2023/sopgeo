@@ -51,10 +51,12 @@ export class DoubaoAdapter extends BasePlatformAdapter {
     const queryText = this.buildQueryText(q);
 
     let response: string;
+    let isRealApi = false;
 
     if (await this.isAvailable()) {
       try {
         response = await this.callDoubao(queryText);
+        isRealApi = true;
       } catch (e) {
         console.warn("[DoubaoAdapter] API call failed, falling back to mock:", e);
         response = this.generateMockResponse(q.brandName, q.keyword, 0.62);
@@ -74,6 +76,7 @@ export class DoubaoAdapter extends BasePlatformAdapter {
       competitors: this.extractCompetitors(response, q.brandName),
       queryTime: Date.now() - start,
       timestamp: new Date(),
+      isRealApi,
     };
   }
 
