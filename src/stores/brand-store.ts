@@ -261,7 +261,7 @@ export const useBrandStore = create<BrandStore>()(
     }),
     {
       name: "sopgeo-brand-store",
-      version: 2,
+      version: 3,
       // Only persist data fields, not functions
       partialize: (state) => ({
         brands: state.brands,
@@ -269,6 +269,14 @@ export const useBrandStore = create<BrandStore>()(
         monitorStatus: state.monitorStatus,
         geoReports: state.geoReports,
       }),
+      // Migrate: on version change, reset pre-seeded brands to ensure fresh data
+      migrate: (persistedState, version) => {
+        // Force reset on version change to fix stale pre-seeded brand data
+        if (version !== 3) {
+          return undefined as unknown as BrandStore;
+        }
+        return persistedState as BrandStore;
+      },
       // Ensure seeded mock brands are always present (even if user has old persisted data)
       merge: (persisted, current) => {
         const p = (persisted as Partial<BrandStore>) || {};

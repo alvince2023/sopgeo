@@ -46,6 +46,14 @@ export async function POST(req: NextRequest) {
     }
 
     const platformResults: MonitorJobResult[] = [];
+    const apiCallLog: Array<{
+      platform: string;
+      apiKeyConfigured: boolean;
+      apiCallSuccess: boolean;
+      errorMessage?: string;
+      resultCount: number;
+      realApiCount: number;
+    }> = [];
 
     // Run platforms in parallel (with concurrency limit)
     await Promise.allSettled(
@@ -54,13 +62,41 @@ export async function POST(req: NextRequest) {
         const platformStart = new Date();
 
         try {
+          // Check API key availability before calling
+          const apiKeyConfigured = await adapter.isAvailable();
+          console.log(`[Monitor API] ${adapter.platformKey}: API key configured = ${apiKeyConfigured}`);
+
           const queries = keywords.map((keyword: string) => ({
             keyword,
             brandName,
           }));
 
-          const results = await adapter.batchQuery(queries);
+          let results;
+          let apiCallSuccess = false;
+          let errorMessage: string | undefined;
+
+          try {
+            results = await adapter.batchQuery(queries);
+            apiCallSuccess = true;
+            console.log(`[Monitor API] ${adapter.platformKey}: batchQuery succeeded, ${results.length} results`);
+          } catch (apiErr) {
+            errorMessage = apiErr instanceof Error ? apiErr.message : String(apiErr);
+            console.error(`[Monitor API] ${adapter.platformKey}: batchQuery failed:`, errorMessage);
+            // Fallback: still try to get results (adapter may have returned mock data)
+            results = await adapter.batchQuery(queries).catch(() => []);
+          }
+
           const score = calculateVisibilityScore(results);
+          const realApiCount = results.filter((r: { isRealApi?: boolean }) => r.isRealApi).length;
+
+          apiCallLog.push({
+            platform: adapter.platformKey,
+            apiKeyConfigured,
+            apiCallSuccess,
+            errorMessage,
+            resultCount: results.length,
+            realApiCount,
+          });
 
           platformResults.push({
             brandId,
@@ -74,6 +110,14 @@ export async function POST(req: NextRequest) {
           });
         } catch (err) {
           console.error(`[Monitor API] Platform ${adapter.platformKey} failed:`, err);
+          apiCallLog.push({
+            platform: adapter.platformKey,
+            apiKeyConfigured: false,
+            apiCallSuccess: false,
+            errorMessage: err instanceof Error ? err.message : String(err),
+            resultCount: 0,
+            realApiCount: 0,
+          });
           // Don't fail the entire request if one platform errors
         }
       })
@@ -99,6 +143,7 @@ export async function POST(req: NextRequest) {
       totalQueries: allResults.length,
       mentionCount,
       lastRunAt: new Date().toISOString(),
+      apiCallLog, // Detailed log for frontend diagnostics
     };
 
     return NextResponse.json({ success: true, data: summary });
